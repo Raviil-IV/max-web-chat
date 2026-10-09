@@ -2789,3 +2789,13 @@ git push origin main
 **Placeholder scan:** плейсхолдеров/TODO нет; каждый шаг содержит код или точную команду.
 
 **Type consistency:** `Message`, `Chat`, `AppState`, `ConnectionStatus`, `ChatContextValue`, `notificationToMessage`, `resolveChatId` определены в задачах 2–6 и используются без переименований в задачах 7–11. `MessageStatus` = `"sending" | "sent" | "failed"` согласован между Task 3, 4, 6, 10.
+
+## Post-review amendments (2026-10-09)
+
+During the whole-branch review the plan was found to diverge from the spec in four places; the spec governs and the implementation was corrected accordingly:
+
+- C1 (spec §6): `sendMessage`'s returned `idMessage` is now stored — `ChatContext` dispatches `REPLACE_MESSAGE_ID` so the `outgoingAPIMessageReceived` webhook dedupes by id (no duplicate outgoing messages).
+- I2 (spec §6): `ADD_MESSAGE` auto-creates a chat for an incoming message from an unknown `chatId`.
+- I3 (spec §7): `receive()` sets connection `"online"` on success and `"error"` on failure; `login` resets to `"idle"` on failure; `usePolling` keeps polling while `connection` is `"online"` or `"error"`.
+- I4 (spec §7): `resolveChatId` throws `GreenApiError(400, "Номер не зарегистрирован в MAX")` when `checkAccount` reports `exists === false`.
+- I5: webhook `timestamp` is normalized from seconds to milliseconds in `normalize.ts`.
