@@ -27,6 +27,10 @@ describe("ChatContext", () => {
   afterEach(() => vi.clearAllMocks());
 
   it("optimistically adds an outgoing message as sent", async () => {
+    localStorage.setItem(
+      "max-web-chat:state",
+      JSON.stringify({ credentials: { idInstance: "1", apiTokenInstance: "t" } })
+    );
     render(
       <ChatProvider>
         <Probe />
