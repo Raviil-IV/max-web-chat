@@ -13,12 +13,16 @@ export function ChatWindow() {
   }
 
   const messages = state.messagesByChat[chat.id] ?? [];
+  const sending = messages.some((m) => m.status === "sending");
 
   return (
     <section className={styles.window}>
       <ChatHeader chat={chat} />
-      <MessageList messages={messages} onRetry={(m) => void retry(m)} />
-      <MessageComposer onSend={(text) => void send(chat.id, text)} />
+      <MessageList messages={messages} onRetry={(m) => void retry(m).catch(() => {})} />
+      <MessageComposer
+        disabled={sending}
+        onSend={(text) => void send(chat.id, text).catch(() => {})}
+      />
     </section>
   );
 }

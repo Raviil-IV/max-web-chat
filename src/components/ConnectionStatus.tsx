@@ -1,7 +1,8 @@
 import { useChat } from "../store/ChatContext";
+import type { ConnectionStatus as ConnectionStatusType } from "../store/types";
 import styles from "./ConnectionStatus.module.css";
 
-const LABELS: Record<string, string> = {
+const LABELS: Record<ConnectionStatusType, string> = {
   idle: "Не подключено",
   connecting: "Подключение…",
   online: "На связи",

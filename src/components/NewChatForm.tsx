@@ -28,6 +28,8 @@ export function NewChatForm() {
     <form className={styles.form} onSubmit={handleSubmit}>
       <input
         className={styles.input}
+        type="tel"
+        aria-label="Номер телефона"
         placeholder="Введите номер телефона"
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
