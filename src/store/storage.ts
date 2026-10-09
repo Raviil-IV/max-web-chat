@@ -1,5 +1,5 @@
 import { initialState } from "./reducer";
-import type { AppState } from "./types";
+import type { AppState, Message } from "./types";
 
 const STORAGE_KEY = "max-web-chat:state";
 
@@ -10,6 +10,24 @@ export function saveState(state: AppState): void {
   } catch {
     /* приватный режим / переполнение — игнорируем */
   }
+}
+
+function downgradeSending(
+  messagesByChat: Record<string, Message[]>
+): Record<string, Message[]> {
+  const result: Record<string, Message[]> = {};
+  for (const [chatId, messages] of Object.entries(messagesByChat)) {
+    if (!Array.isArray(messages)) continue;
+    result[chatId] = messages.map((message) =>
+      message &&
+      typeof message === "object" &&
+      "status" in message &&
+      message.status === "sending"
+        ? { ...message, status: "failed" as const }
+        : message
+    );
+  }
+  return result;
 }
 
 export function loadState(): AppState | null {
@@ -39,6 +57,7 @@ export function loadState(): AppState | null {
     return {
       ...initialState,
       ...state,
+      messagesByChat: downgradeSending(state.messagesByChat ?? {}),
       connection: "idle",
     };
   } catch {

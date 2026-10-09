@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useReducer,
   useRef,
@@ -38,6 +39,28 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   credsRef.current = state.credentials;
 
   usePersistentState(state);
+
+  const reconnectingRef = useRef(false);
+  useEffect(() => {
+    const creds = state.credentials;
+    if (reconnectingRef.current || !creds || state.connection !== "idle") {
+      return;
+    }
+    reconnectingRef.current = true;
+    void (async () => {
+      try {
+        await api.getSettings(creds);
+        await api.setSettings(creds, {
+          webhookUrl: "",
+          incomingWebhook: "yes",
+          outgoingWebhook: "yes",
+        });
+        dispatch({ type: "SET_CONNECTION", status: "online" });
+      } catch {
+        dispatch({ type: "SET_CONNECTION", status: "error" });
+      }
+    })();
+  }, [state.credentials, state.connection]);
 
   const creds = useCallback((): Credentials => {
     const c = credsRef.current;

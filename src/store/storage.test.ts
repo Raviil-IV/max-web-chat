@@ -26,6 +26,28 @@ describe("storage", () => {
     expect(loadState()).toBeNull();
   });
 
+  it("downgrades persisted sending messages to failed", () => {
+    const message = {
+      id: "local-1",
+      chatId: "c1",
+      text: "hi",
+      timestamp: 1000,
+      direction: "out",
+      status: "sending",
+    };
+    localStorage.setItem(
+      "max-web-chat:state",
+      JSON.stringify({
+        ...initialState,
+        credentials: { idInstance: "1", apiTokenInstance: "t" },
+        messagesByChat: { c1: [message] },
+      })
+    );
+    const loaded = loadState();
+    expect(loaded?.messagesByChat["c1"][0].status).toBe("failed");
+    expect(loaded?.messagesByChat["c1"][0].id).toBe("local-1");
+  });
+
   it("clears state", () => {
     saveState(initialState);
     clearState();

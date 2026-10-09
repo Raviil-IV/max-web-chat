@@ -50,6 +50,23 @@ describe("ChatContext", () => {
     expect(screen.getByTestId("count").textContent).toBe("1");
   });
 
+  it("reconnects to online when credentials are persisted", async () => {
+    localStorage.setItem("max-web-chat:state", JSON.stringify(persistedWithCreds));
+    render(
+      <ChatProvider>
+        <Probe />
+      </ChatProvider>
+    );
+    await act(async () => {});
+    expect(screen.getByTestId("conn").textContent).toBe("online");
+    expect(api.getSettings).toHaveBeenCalledWith(CREDS);
+    expect(api.setSettings).toHaveBeenCalledWith(CREDS, {
+      webhookUrl: "",
+      incomingWebhook: "yes",
+      outgoingWebhook: "yes",
+    });
+  });
+
   it("logs in and sets connection to online", async () => {
     function LoginProbe() {
       const { state, login } = useChat();
@@ -131,6 +148,7 @@ describe("ChatContext", () => {
         <ReceiveProbe />
       </ChatProvider>
     );
+    await act(async () => {});
     await act(async () => {
       screen.getByText("receive").click();
     });
