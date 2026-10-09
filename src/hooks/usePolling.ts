@@ -7,10 +7,10 @@ const MAX_BACKOFF = 30000;
 export function usePolling(options?: { intervalMs?: number }): void {
   const intervalMs = options?.intervalMs ?? DEFAULT_INTERVAL;
   const { state, receive } = useChat();
-  const online = state.connection === "online";
+  const active = state.connection === "online" || state.connection === "error";
 
   useEffect(() => {
-    if (!online) return;
+    if (!active) return;
 
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -35,5 +35,5 @@ export function usePolling(options?: { intervalMs?: number }): void {
       stopped = true;
       if (timer) clearTimeout(timer);
     };
-  }, [online, intervalMs, receive]);
+  }, [active, intervalMs, receive]);
 }

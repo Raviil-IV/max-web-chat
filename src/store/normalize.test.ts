@@ -20,9 +20,25 @@ describe("notificationToMessage", () => {
       id: "m1",
       chatId: "70000000000",
       text: "hi",
-      timestamp: 1000,
+      timestamp: 1_000_000,
       direction: "in",
     });
+  });
+
+  it("converts seconds to milliseconds", () => {
+    const msg = notificationToMessage(body({ timestamp: 1000 }));
+    expect(msg?.timestamp).toBe(1_000_000);
+  });
+
+  it("passes through millisecond timestamps unchanged", () => {
+    const ms = 1_700_000_000_000;
+    const msg = notificationToMessage(body({ timestamp: ms }));
+    expect(msg?.timestamp).toBe(ms);
+  });
+
+  it("omits status for incoming messages", () => {
+    const msg = notificationToMessage(body({}));
+    expect(msg).not.toHaveProperty("status");
   });
 
   it("maps an outgoing message sent from the phone as in the out direction", () => {

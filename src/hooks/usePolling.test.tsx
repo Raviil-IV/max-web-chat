@@ -41,4 +41,14 @@ describe("usePolling", () => {
     await vi.advanceTimersByTimeAsync(5000);
     expect(receive).not.toHaveBeenCalled();
   });
+
+  it("keeps polling in error state with backoff", async () => {
+    connection = "error";
+    receive.mockRejectedValue(new Error("fail"));
+    render(<Harness />);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(receive).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(receive).toHaveBeenCalledTimes(2);
+  });
 });

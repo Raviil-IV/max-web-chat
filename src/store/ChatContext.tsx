@@ -46,15 +46,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (next: Credentials) => {
-    credsRef.current = next;
     dispatch({ type: "SET_CONNECTION", status: "connecting" });
-    await api.getSettings(next);
-    await api.setSettings(next, {
-      webhookUrl: "",
-      incomingWebhook: "yes",
-      outgoingWebhook: "yes",
-    });
-    dispatch({ type: "LOGIN_SUCCESS", credentials: next });
+    try {
+      await api.getSettings(next);
+      await api.setSettings(next, {
+        webhookUrl: "",
+        incomingWebhook: "yes",
+        outgoingWebhook: "yes",
+      });
+      credsRef.current = next;
+      dispatch({ type: "LOGIN_SUCCESS", credentials: next });
+    } catch (e) {
+      dispatch({ type: "SET_CONNECTION", status: "idle" });
+      throw e;
+    }
   }, []);
 
   const logout = useCallback(() => {
@@ -83,7 +88,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
       try {
         const res = await api.sendMessage(creds(), chatId, text);
-        dispatch({ type: "UPDATE_MESSAGE_STATUS", chatId, id: tempId, status: "sent" });
+        dispatch({ type: "REPLACE_MESSAGE_ID", chatId, tempId, serverId: res.idMessage });
         return res.idMessage;
       } catch (e) {
         dispatch({ type: "UPDATE_MESSAGE_STATUS", chatId, id: tempId, status: "failed" });
@@ -110,12 +115,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         status: "sending",
       });
       try {
-        await api.sendMessage(creds(), message.chatId, message.text);
+        const res = await api.sendMessage(creds(), message.chatId, message.text);
         dispatch({
-          type: "UPDATE_MESSAGE_STATUS",
+          type: "REPLACE_MESSAGE_ID",
           chatId: message.chatId,
-          id: message.id,
-          status: "sent",
+          tempId: message.id,
+          serverId: res.idMessage,
         });
       } catch (e) {
         dispatch({
@@ -131,14 +136,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 
   const receive = useCallback(async (): Promise<boolean> => {
-    const notification = await api.receiveNotification(creds());
-    if (!notification) return false;
-    const message = notificationToMessage(notification.body);
-    if (message) {
-      dispatch({ type: "ADD_MESSAGE", message });
+    try {
+      const notification = await api.receiveNotification(creds());
+      if (!notification) {
+        dispatch({ type: "SET_CONNECTION", status: "online" });
+        return false;
+      }
+      const message = notificationToMessage(notification.body);
+      if (message) {
+        dispatch({ type: "ADD_MESSAGE", message });
+      }
+      await api.deleteNotification(creds(), notification.receiptId);
+      dispatch({ type: "SET_CONNECTION", status: "online" });
+      return true;
+    } catch (e) {
+      dispatch({ type: "SET_CONNECTION", status: "error" });
+      throw e;
     }
-    await api.deleteNotification(creds(), notification.receiptId);
-    return true;
   }, [creds]);
 
   const value = useMemo<ChatContextValue>(

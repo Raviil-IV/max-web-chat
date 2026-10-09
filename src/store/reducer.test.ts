@@ -130,4 +130,67 @@ describe("reducer", () => {
     const persisted = { ...initialState, activeChatId: "c9" };
     expect(reducer(initialState, { type: "HYDRATE", state: persisted })).toEqual(persisted);
   });
+
+  it("replaces a temporary message id with the server id", () => {
+    const withMsg = reducer(
+      { ...initialState, activeChatId: "c1" },
+      { type: "ADD_MESSAGE", message: msg({ id: "local-1", direction: "out", status: "sending" }) }
+    );
+    const replaced = reducer(withMsg, {
+      type: "REPLACE_MESSAGE_ID",
+      chatId: "c1",
+      tempId: "local-1",
+      serverId: "srv-1",
+    });
+    expect(replaced.messagesByChat["c1"]).toHaveLength(1);
+    expect(replaced.messagesByChat["c1"][0].id).toBe("srv-1");
+    expect(replaced.messagesByChat["c1"][0].status).toBe("sent");
+  });
+
+  it("removes the temp message when the server copy already arrived (race)", () => {
+    const withTemp = reducer(
+      { ...initialState, activeChatId: "c1" },
+      { type: "ADD_MESSAGE", message: msg({ id: "local-1", direction: "out", status: "sending" }) }
+    );
+    const withServer = reducer(withTemp, {
+      type: "ADD_MESSAGE",
+      message: msg({ id: "srv-1", direction: "out", status: "sent" }),
+    });
+    const replaced = reducer(withServer, {
+      type: "REPLACE_MESSAGE_ID",
+      chatId: "c1",
+      tempId: "local-1",
+      serverId: "srv-1",
+    });
+    expect(replaced.messagesByChat["c1"]).toHaveLength(1);
+    expect(replaced.messagesByChat["c1"][0].id).toBe("srv-1");
+  });
+
+  it("auto-creates a chat for an incoming message from an unknown chatId", () => {
+    const state = reducer(
+      { ...initialState, activeChatId: "c1" },
+      { type: "ADD_MESSAGE", message: msg({ chatId: "unknown", direction: "in" }) }
+    );
+    expect(state.chats).toHaveLength(1);
+    expect(state.chats[0]).toEqual({
+      id: "unknown",
+      name: "unknown",
+      phone: "unknown",
+      lastActivity: 1,
+    });
+  });
+
+  it("does not auto-create a chat for an outgoing message", () => {
+    const state = reducer(
+      { ...initialState, activeChatId: "c1" },
+      { type: "ADD_MESSAGE", message: msg({ chatId: "unknown", direction: "out" }) }
+    );
+    expect(state.chats).toHaveLength(0);
+  });
+
+  it("is a no-op when SET_CONNECTION status is unchanged", () => {
+    const online = reducer(initialState, { type: "SET_CONNECTION", status: "online" });
+    const again = reducer(online, { type: "SET_CONNECTION", status: "online" });
+    expect(again).toBe(online);
+  });
 });

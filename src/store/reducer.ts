@@ -18,7 +18,8 @@ export type Action =
   | { type: "ADD_CHAT"; chat: Chat }
   | { type: "SELECT_CHAT"; chatId: string }
   | { type: "ADD_MESSAGE"; message: Message }
-  | { type: "UPDATE_MESSAGE_STATUS"; chatId: string; id: string; status: MessageStatus };
+  | { type: "UPDATE_MESSAGE_STATUS"; chatId: string; id: string; status: MessageStatus }
+  | { type: "REPLACE_MESSAGE_ID"; chatId: string; tempId: string; serverId: string };
 
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -32,6 +33,7 @@ export function reducer(state: AppState, action: Action): AppState {
       return initialState;
 
     case "SET_CONNECTION":
+      if (state.connection === action.status) return state;
       return { ...state, connection: action.status };
 
     case "ADD_CHAT": {
@@ -66,9 +68,24 @@ export function reducer(state: AppState, action: Action): AppState {
         ? { ...state.unread, [message.chatId]: (state.unread[message.chatId] ?? 0) + 1 }
         : state.unread;
 
-      const chats = state.chats.map((c) =>
+      let chats = state.chats.map((c) =>
         c.id === message.chatId ? { ...c, lastActivity: message.timestamp } : c
       );
+
+      if (
+        message.direction === "in" &&
+        !chats.some((c) => c.id === message.chatId)
+      ) {
+        chats = [
+          {
+            id: message.chatId,
+            name: message.chatId,
+            phone: message.chatId,
+            lastActivity: message.timestamp,
+          },
+          ...chats,
+        ];
+      }
 
       return {
         ...state,
@@ -88,6 +105,22 @@ export function reducer(state: AppState, action: Action): AppState {
             m.id === action.id ? { ...m, status: action.status } : m
           ),
         },
+      };
+    }
+
+    case "REPLACE_MESSAGE_ID": {
+      const list = state.messagesByChat[action.chatId] ?? [];
+      const hasServer = list.some((m) => m.id === action.serverId);
+      const messages = hasServer
+        ? list.filter((m) => m.id !== action.tempId)
+        : list.map((m) =>
+            m.id === action.tempId
+              ? { ...m, id: action.serverId, status: "sent" as const }
+              : m
+          );
+      return {
+        ...state,
+        messagesByChat: { ...state.messagesByChat, [action.chatId]: messages },
       };
     }
 

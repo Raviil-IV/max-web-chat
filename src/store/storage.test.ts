@@ -21,6 +21,11 @@ describe("storage", () => {
     expect(loadState()).toBeNull();
   });
 
+  it("returns null on invalid shape", () => {
+    localStorage.setItem("max-web-chat:state", JSON.stringify({ chats: 5 }));
+    expect(loadState()).toBeNull();
+  });
+
   it("clears state", () => {
     saveState(initialState);
     clearState();

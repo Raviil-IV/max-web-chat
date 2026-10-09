@@ -16,12 +16,15 @@ export function notificationToMessage(body: NotificationBody): Message | null {
 
   const direction = body.typeWebhook === "incomingMessageReceived" ? "in" : "out";
 
+  const raw = body.timestamp;
+  const timestamp = raw < 1e12 ? Math.round(raw * 1000) : raw;
+
   return {
     id: body.idMessage,
     chatId,
     text: body.messageData.textMessageData?.textMessage ?? "",
-    timestamp: body.timestamp,
+    timestamp,
     direction,
-    status: direction === "out" ? "sent" : undefined,
+    ...(direction === "out" ? { status: "sent" as const } : {}),
   };
 }

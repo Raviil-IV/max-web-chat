@@ -16,10 +16,29 @@ export function loadState(): AppState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<AppState>;
+    const parsed = JSON.parse(raw) as unknown;
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      return null;
+    }
+    const state = parsed as Partial<AppState>;
+    if (
+      !Array.isArray(state.chats) ||
+      typeof state.messagesByChat !== "object" ||
+      state.messagesByChat === null ||
+      Array.isArray(state.messagesByChat) ||
+      typeof state.unread !== "object" ||
+      state.unread === null ||
+      Array.isArray(state.unread)
+    ) {
+      return null;
+    }
     return {
       ...initialState,
-      ...parsed,
+      ...state,
       connection: "idle",
     };
   } catch {
