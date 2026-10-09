@@ -31,6 +31,12 @@ describe("notificationToMessage", () => {
     expect(msg?.status).toBe("sent");
   });
 
+  it("maps an outgoing API message as out/sent", () => {
+    const msg = notificationToMessage(body({ typeWebhook: "outgoingAPIMessageReceived" }));
+    expect(msg?.direction).toBe("out");
+    expect(msg?.status).toBe("sent");
+  });
+
   it("ignores non-text messages", () => {
     const msg = notificationToMessage(
       body({ messageData: { typeMessage: "imageMessage" } })
