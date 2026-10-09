@@ -1,0 +1,62 @@
+.wrapper {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f2f5;
+}
+.card {
+  width: 360px;
+  padding: 32px 28px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  margin: 0 0 4px;
+  font-size: 22px;
+  color: #1c1e21;
+}
+.subtitle {
+  margin: 0 0 20px;
+  color: #707579;
+  font-size: 14px;
+}
+.label {
+  font-size: 13px;
+  color: #707579;
+  margin-bottom: 6px;
+}
+.input {
+  height: 40px;
+  padding: 0 12px;
+  margin-bottom: 16px;
+  border: 1px solid #e4e6eb;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+}
+.input:focus {
+  border-color: #3390ec;
+}
+.error {
+  margin: 0 0 12px;
+  color: #d93838;
+  font-size: 13px;
+}
+.button {
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: #3390ec;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
