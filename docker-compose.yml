@@ -1,0 +1,7 @@
+services:
+  max-web-chat:
+    build: .
+    image: max-web-chat
+    ports:
+      - "8080:80"
+    restart: unless-stopped
