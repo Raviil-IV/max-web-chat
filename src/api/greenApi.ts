@@ -101,5 +101,9 @@ export async function resolveChatId(
   const normalized = normalizePhone(phoneNumber);
   const account = await checkAccount(creds, normalized);
   const chatId = account.chatId ?? account.idChat;
-  return chatId ? String(chatId) : normalized;
+  if (chatId) return String(chatId);
+  if (account.exists === false) {
+    throw new GreenApiError(400, "Номер не зарегистрирован в MAX");
+  }
+  return normalized;
 }

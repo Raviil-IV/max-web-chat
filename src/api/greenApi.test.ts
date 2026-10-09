@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   GreenApiError,
+  checkAccount,
   deleteNotification,
   getSettings,
   receiveNotification,
@@ -45,9 +46,22 @@ describe("greenApi", () => {
   });
 
   it("sendMessage posts chatId and message and returns idMessage", async () => {
-    mockFetchOnce({ idMessage: "abc" });
+    const fetchMock = mockFetchOnce({ idMessage: "abc" });
     const res = await sendMessage(creds, "70000000000", "привет");
     expect(res.idMessage).toBe("abc");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://api.green-api.com/waInstance1101000/sendMessage/token");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body)).toEqual({ chatId: "70000000000", message: "привет" });
+  });
+
+  it("checkAccount posts phoneNumber body", async () => {
+    const fetchMock = mockFetchOnce({ exists: true });
+    await checkAccount(creds, "79991234567");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://api.green-api.com/waInstance1101000/checkAccount/token");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body)).toEqual({ phoneNumber: "79991234567" });
   });
 
   it("receiveNotification returns null on empty body", async () => {
@@ -63,9 +77,11 @@ describe("greenApi", () => {
     );
   });
 
-  it("throws GreenApiError on non-ok response", async () => {
+  it("throws GreenApiError with status and message on non-ok response", async () => {
     mockFetchOnce({ message: "bad" }, false, 401);
-    await expect(getSettings(creds)).rejects.toBeInstanceOf(GreenApiError);
+    const err = await getSettings(creds).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(GreenApiError);
+    expect(err).toMatchObject({ status: 401, message: "bad" });
   });
 
   it("resolveChatId returns chatId from checkAccount when present", async () => {
@@ -76,5 +92,12 @@ describe("greenApi", () => {
   it("resolveChatId falls back to the normalized phone number", async () => {
     mockFetchOnce({ exists: true });
     await expect(resolveChatId(creds, "+7 (999) 123-45-67")).resolves.toBe("79991234567");
+  });
+
+  it("resolveChatId throws when the number is not registered", async () => {
+    mockFetchOnce({ exists: false });
+    const err = await resolveChatId(creds, "+7 (999) 123-45-67").catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(GreenApiError);
+    expect(err).toMatchObject({ status: 400, message: "Номер не зарегистрирован в MAX" });
   });
 });
