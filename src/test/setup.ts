@@ -27,3 +27,10 @@ if (typeof globalThis.localStorage === "undefined") {
     writable: true,
   });
 }
+
+// jsdom does not implement `Element.prototype.scrollIntoView`, which the
+// message list calls to pin the view to the newest message. Provide a no-op
+// so components relying on it do not throw under test.
+if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
