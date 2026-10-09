@@ -60,7 +60,8 @@ export function reducer(state: AppState, action: Action): AppState {
         ? existing.map((m) => (m.id === message.id ? message : m))
         : [...existing, message];
 
-      const isUnread = message.direction === "in" && message.chatId !== state.activeChatId;
+      const isUnread =
+        !alreadyThere && message.direction === "in" && message.chatId !== state.activeChatId;
       const unread = isUnread
         ? { ...state.unread, [message.chatId]: (state.unread[message.chatId] ?? 0) + 1 }
         : state.unread;

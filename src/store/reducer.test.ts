@@ -21,6 +21,19 @@ describe("reducer", () => {
     expect(state.activeChatId).toBe("c1");
   });
 
+  it("selects an existing chat without duplicating it", () => {
+    const withChat = reducer(initialState, {
+      type: "ADD_CHAT",
+      chat: { id: "c1", name: "Иван", phone: "7999", lastActivity: 1 },
+    });
+    const state = reducer({ ...withChat, activeChatId: null }, {
+      type: "ADD_CHAT",
+      chat: { id: "c1", name: "Иван", phone: "7999", lastActivity: 2 },
+    });
+    expect(state.chats).toHaveLength(1);
+    expect(state.activeChatId).toBe("c1");
+  });
+
   it("adds a message", () => {
     const state = reducer(
       { ...initialState, activeChatId: "c1" },
@@ -34,8 +47,34 @@ describe("reducer", () => {
       { ...initialState, activeChatId: "c1" },
       { type: "ADD_MESSAGE", message: msg({}) }
     );
-    const withTwo = reducer(withOne, { type: "ADD_MESSAGE", message: msg({}) });
+    const withTwo = reducer(withOne, {
+      type: "ADD_MESSAGE",
+      message: msg({ text: "updated", status: "sent" }),
+    });
     expect(withTwo.messagesByChat["c1"]).toHaveLength(1);
+    expect(withTwo.messagesByChat["c1"][0].text).toBe("updated");
+    expect(withTwo.messagesByChat["c1"][0].status).toBe("sent");
+  });
+
+  it("does not double-count unread for a redelivered message", () => {
+    const withUnread = reducer(
+      { ...initialState, activeChatId: "other" },
+      { type: "ADD_MESSAGE", message: msg({ chatId: "c1", direction: "in" }) }
+    );
+    expect(withUnread.unread["c1"]).toBe(1);
+    const redelivered = reducer(withUnread, {
+      type: "ADD_MESSAGE",
+      message: msg({ chatId: "c1", direction: "in", text: "updated" }),
+    });
+    expect(redelivered.unread["c1"]).toBe(1);
+  });
+
+  it("does not increment unread for incoming messages in the active chat", () => {
+    const state = reducer(
+      { ...initialState, activeChatId: "c1" },
+      { type: "ADD_MESSAGE", message: msg({ chatId: "c1", direction: "in" }) }
+    );
+    expect(state.unread["c1"]).toBeUndefined();
   });
 
   it("increments unread for inactive chats and marks active chat read", () => {
