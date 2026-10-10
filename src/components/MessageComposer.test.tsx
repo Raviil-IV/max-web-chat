@@ -36,19 +36,19 @@ describe("MessageComposer emoji insertion", () => {
     render(<MessageComposer onSend={vi.fn()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Эмодзи" }));
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "😊" })).toBeInTheDocument();
 
     await userEvent.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "😊" })).not.toBeInTheDocument();
   });
 
   it("closes the picker on outside click", async () => {
     render(<MessageComposer onSend={vi.fn()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Эмодзи" }));
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "😊" })).toBeInTheDocument();
 
     await userEvent.click(document.body);
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "😊" })).not.toBeInTheDocument();
   });
 });

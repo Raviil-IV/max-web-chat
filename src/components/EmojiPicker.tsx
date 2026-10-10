@@ -7,18 +7,18 @@ export function EmojiPicker({
   onClose,
 }: {
   onPick: (emoji: string) => void;
-  onClose?: () => void;
+  onClose?: (reason: "escape" | "outside") => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose?.();
+      if (e.key === "Escape") onClose?.("escape");
     }
 
     function handleMouseDown(e: MouseEvent) {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onClose?.();
+        onClose?.("outside");
       }
     }
 
@@ -31,7 +31,7 @@ export function EmojiPicker({
   }, [onClose]);
 
   return (
-    <div ref={panelRef} className={styles.panel} role="dialog" aria-label="Палитра эмодзи">
+    <div ref={panelRef} className={styles.panel} aria-label="Эмодзи">
       {EMOJI_GROUPS.map((group) => (
         <div key={group.name} className={styles.group}>
           <div className={styles.groupName}>{group.name}</div>

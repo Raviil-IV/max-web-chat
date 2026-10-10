@@ -7,6 +7,7 @@ const PREVIEW_MAX = 60;
 
 function previewFor(text: string, direction: "in" | "out"): string {
   const flattened = text.replace(/\s+/g, " ").trim();
+  if (!flattened) return "";
   const full = direction === "out" ? `Вы: ${flattened}` : flattened;
   return full.length > PREVIEW_MAX
     ? `${full.slice(0, PREVIEW_MAX).trimEnd()}…`

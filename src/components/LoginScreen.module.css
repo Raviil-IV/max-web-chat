@@ -59,7 +59,7 @@
   font-weight: 600;
   cursor: pointer;
 }
-.button:hover {
+.button:hover:not(:disabled) {
   background: var(--accent-hover);
 }
 .button:disabled {

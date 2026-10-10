@@ -74,6 +74,7 @@
 }
 .active .time,
 .active .preview { color: rgba(255, 255, 255, 0.7); }
+.active .badge { background: #fff; color: var(--accent); }
 .empty {
   padding: 16px;
   color: var(--text-muted);

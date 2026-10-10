@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { EmojiPicker } from "./EmojiPicker";
 import styles from "./MessageComposer.module.css";
 
@@ -14,7 +14,7 @@ export function MessageComposer({
   const [text, setText] = useState("");
   const [emojiOpen, setEmojiOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const selectionRef = useRef({ start: 0, end: 0 });
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const pendingCaretRef = useRef<number | null>(null);
 
   const trimmed = text.trim();
@@ -43,28 +43,27 @@ export function MessageComposer({
     }
   }
 
-  function handleBlur() {
-    const el = textareaRef.current;
-    if (el) {
-      selectionRef.current = { start: el.selectionStart, end: el.selectionEnd };
-    }
-  }
-
   function handleEmojiPick(emoji: string) {
     const el = textareaRef.current;
     if (!el) return;
-    const { start, end } = selectionRef.current;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
     const next = text.slice(0, start) + emoji + text.slice(end);
     const caret = start + emoji.length;
     setText(next);
-    selectionRef.current = { start: caret, end: caret };
     pendingCaretRef.current = caret;
     setEmojiOpen(false);
   }
 
+  const handleEmojiClose = useCallback((reason: "escape" | "outside") => {
+    setEmojiOpen(false);
+    if (reason === "escape") emojiButtonRef.current?.focus();
+  }, []);
+
   return (
     <div className={styles.composer}>
       <button
+        ref={emojiButtonRef}
         className={styles.emojiButton}
         type="button"
         aria-label="Эмодзи"
@@ -82,7 +81,6 @@ export function MessageComposer({
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
         rows={1}
         disabled={disabled}
       />
@@ -98,7 +96,7 @@ export function MessageComposer({
         Отправить
       </button>
       {emojiOpen && (
-        <EmojiPicker onPick={handleEmojiPick} onClose={() => setEmojiOpen(false)} />
+        <EmojiPicker onPick={handleEmojiPick} onClose={handleEmojiClose} />
       )}
     </div>
   );
