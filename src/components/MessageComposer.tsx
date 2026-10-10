@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { FaceSlightlySmiling } from "lucide-react";
 import { EmojiPicker } from "./EmojiPicker";
 import styles from "./MessageComposer.module.css";
 
@@ -72,7 +73,7 @@ export function MessageComposer({
         onClick={() => setEmojiOpen((open) => !open)}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        😊
+        <FaceSlightlySmiling size={22} aria-hidden />
       </button>
       <textarea
         ref={textareaRef}
