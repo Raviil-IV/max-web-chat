@@ -5,15 +5,18 @@ import { Sidebar } from "./Sidebar";
 
 const addChat = vi.fn();
 const selectChat = vi.fn();
+const logout = vi.fn();
 
 vi.mock("../store/ChatContext", () => ({
   useChat: () => ({
     addChat,
     selectChat,
+    logout,
     state: {
       connection: "online",
       activeChatId: "c1",
       unread: { c1: 0 },
+      messagesByChat: {},
       chats: [
         { id: "c1", name: "+7 999 111-22-33", phone: "79991112233", lastActivity: 2 },
         { id: "c2", name: "+7 900 000-00-00", phone: "79000000000", lastActivity: 1 },
@@ -41,5 +44,12 @@ describe("Sidebar", () => {
     render(<Sidebar />);
     await userEvent.click(screen.getByText("+7 900 000-00-00"));
     expect(selectChat).toHaveBeenCalledWith("c2");
+  });
+
+  it("filters chats by search query", async () => {
+    render(<Sidebar />);
+    await userEvent.type(screen.getByLabelText("Поиск"), "900");
+    expect(screen.getByText("+7 900 000-00-00")).toBeInTheDocument();
+    expect(screen.queryByText("+7 999 111-22-33")).not.toBeInTheDocument();
   });
 });

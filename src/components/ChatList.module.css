@@ -1,46 +1,82 @@
-.list { list-style: none; margin: 0; padding: 4px; overflow-y: auto; flex: 1; }
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 8px;
+  overflow-y: auto;
+  flex: 1;
+}
 .item {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: none;
   background: transparent;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   text-align: left;
-  font-size: 15px;
-  color: #1c1e21;
+  color: var(--text);
 }
-.item:hover { background: #f0f2f5; }
-.active { background: #3390ec; color: #fff; }
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #dfe6ec;
-  color: #3390ec;
+.item:hover { background: var(--bg-hover); }
+.active,
+.active:hover { background: var(--bg-active); }
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+}
+.time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.bottom {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  flex-shrink: 0;
+  gap: 8px;
 }
-.active .avatar { background: rgba(255,255,255,0.25); color: #fff; }
-.name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--text-muted);
+}
 .badge {
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
   border-radius: 10px;
-  background: #3390ec;
+  background: var(--accent);
   color: #fff;
   font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
-.active .badge { background: #fff; color: #3390ec; }
-.empty { padding: 16px; color: #707579; font-size: 14px; text-align: center; }
+.active .time,
+.active .preview { color: rgba(255, 255, 255, 0.7); }
+.empty {
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+}

@@ -6,7 +6,7 @@ import { Sidebar } from "./Sidebar";
 import styles from "./App.module.css";
 
 function Workspace() {
-  const { state, logout } = useChat();
+  const { state } = useChat();
   usePolling();
 
   if (!state.credentials) {
@@ -16,10 +16,9 @@ function Workspace() {
   return (
     <div className={styles.app}>
       <Sidebar />
-      <ChatWindow />
-      <button className={styles.logout} type="button" onClick={logout}>
-        Выйти
-      </button>
+      <main className={styles.chat}>
+        <ChatWindow />
+      </main>
     </div>
   );
 }
