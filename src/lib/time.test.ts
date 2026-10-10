@@ -68,7 +68,7 @@ describe("formatDateLabel", () => {
 
   it("добавляет год, если он отличается", () => {
     expect(formatDateLabel(local(2025, 11, 31, 12, 0), NOW)).toBe(
-      "31 декабря 2025 г.",
+      "31 декабря 2025",
     );
   });
 

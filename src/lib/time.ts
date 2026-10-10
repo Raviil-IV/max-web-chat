@@ -53,10 +53,12 @@ export function formatDateLabel(timestamp: number, now: number = Date.now()): st
     return "Вчера";
   }
 
-  return (date.getFullYear() === nowDate.getFullYear()
-    ? dateFormatter
-    : dateYearFormatter
-  ).format(date);
+  if (date.getFullYear() === nowDate.getFullYear()) {
+    return dateFormatter.format(date);
+  }
+
+  // Intl ru-RU добавляет суффикс « г.» к полной дате; бриф требует d MMMM yyyy.
+  return dateYearFormatter.format(date).replace(/\s*г\.?$/, "");
 }
 
 /** Время для списка чатов: HH:MM сегодня, иначе подпись даты. */
