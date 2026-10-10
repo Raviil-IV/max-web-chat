@@ -1,4 +1,5 @@
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { EmojiPicker } from "./EmojiPicker";
 import styles from "./MessageComposer.module.css";
 
 const MAX_LENGTH = 4000;
@@ -11,8 +12,23 @@ export function MessageComposer({
   disabled?: boolean;
 }) {
   const [text, setText] = useState("");
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const selectionRef = useRef({ start: 0, end: 0 });
+  const pendingCaretRef = useRef<number | null>(null);
+
   const trimmed = text.trim();
   const tooLong = text.length > MAX_LENGTH;
+
+  // После вставки эмодзи возвращаем фокус в поле и каретку на место.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (el && pendingCaretRef.current !== null) {
+      el.focus();
+      el.setSelectionRange(pendingCaretRef.current, pendingCaretRef.current);
+      pendingCaretRef.current = null;
+    }
+  }, [text]);
 
   function submit() {
     if (!trimmed || tooLong) return;
@@ -27,17 +43,52 @@ export function MessageComposer({
     }
   }
 
+  function handleBlur() {
+    const el = textareaRef.current;
+    if (el) {
+      selectionRef.current = { start: el.selectionStart, end: el.selectionEnd };
+    }
+  }
+
+  function handleEmojiPick(emoji: string) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const { start, end } = selectionRef.current;
+    const next = text.slice(0, start) + emoji + text.slice(end);
+    const caret = start + emoji.length;
+    setText(next);
+    selectionRef.current = { start: caret, end: caret };
+    pendingCaretRef.current = caret;
+    setEmojiOpen(false);
+  }
+
   return (
     <div className={styles.composer}>
+      <button
+        className={styles.emojiButton}
+        type="button"
+        aria-label="Эмодзи"
+        aria-expanded={emojiOpen}
+        disabled={disabled}
+        onClick={() => setEmojiOpen((open) => !open)}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        😊
+      </button>
       <textarea
+        ref={textareaRef}
         className={styles.textarea}
         placeholder="Введите сообщение"
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
         rows={1}
         disabled={disabled}
       />
+      <span className={`${styles.counter} ${tooLong ? styles.over : ""}`}>
+        {text.length}/{MAX_LENGTH}
+      </span>
       <button
         className={styles.send}
         type="button"
@@ -46,9 +97,9 @@ export function MessageComposer({
       >
         Отправить
       </button>
-      <span className={`${styles.counter} ${tooLong ? styles.over : ""}`}>
-        {text.length}/{MAX_LENGTH}
-      </span>
+      {emojiOpen && (
+        <EmojiPicker onPick={handleEmojiPick} onClose={() => setEmojiOpen(false)} />
+      )}
     </div>
   );
 }

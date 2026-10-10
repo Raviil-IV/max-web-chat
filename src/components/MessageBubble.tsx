@@ -1,4 +1,5 @@
 import type { Message } from "../store/types";
+import { formatTime } from "../lib/time";
 import styles from "./MessageBubble.module.css";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -6,13 +7,6 @@ const STATUS_LABEL: Record<string, string> = {
   sent: "✓",
   failed: "⚠",
 };
-
-function formatTime(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export function MessageBubble({
   message,

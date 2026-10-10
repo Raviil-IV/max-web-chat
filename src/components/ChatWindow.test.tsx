@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { formatDateLabel } from "../lib/time";
 import { ChatWindow } from "./ChatWindow";
 
 const send = vi.fn();
@@ -66,5 +67,39 @@ describe("ChatWindow", () => {
     render(<ChatWindow />);
     expect(screen.getByRole("button", { name: "Отправить" })).toBeDisabled();
     expect(screen.getByPlaceholderText(/сообщение/i)).toBeDisabled();
+  });
+
+  it("renders a date separator before the first message and on day change", () => {
+    const NOW = new Date(2026, 9, 10, 14, 30).getTime();
+    const day1 = new Date(2026, 9, 8, 10, 0).getTime();
+    const day2 = new Date(2026, 9, 9, 10, 0).getTime();
+    const spy = vi.spyOn(Date, "now").mockReturnValue(NOW);
+    try {
+      mockState.messagesByChat = {
+        c1: [
+          { id: "m1", chatId: "c1", text: "Первый", timestamp: day1, direction: "in" },
+          { id: "m2", chatId: "c1", text: "Второй", timestamp: day1 + 60_000, direction: "out", status: "sent" },
+          { id: "m3", chatId: "c1", text: "Третий", timestamp: day2, direction: "in" },
+        ],
+      };
+      render(<ChatWindow />);
+      expect(screen.getByText(formatDateLabel(day1, NOW))).toBeInTheDocument();
+      expect(screen.getByText(formatDateLabel(day2, NOW))).toBeInTheDocument();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("inserts a picked emoji into the input", async () => {
+    render(<ChatWindow />);
+    const box = screen.getByPlaceholderText(/сообщение/i) as HTMLTextAreaElement;
+
+    await userEvent.type(box, "привет");
+    box.setSelectionRange(3, 3);
+
+    await userEvent.click(screen.getByRole("button", { name: "Эмодзи" }));
+    await userEvent.click(screen.getByRole("button", { name: "😊" }));
+
+    expect(box.value).toBe("при😊вет");
   });
 });
