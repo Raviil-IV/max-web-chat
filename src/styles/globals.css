@@ -22,5 +22,6 @@
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
+button, input, textarea, select { font-family: inherit; }
 html, body, #root { height: 100%; margin: 0; }
 body { background: var(--bg-chat); color: var(--text); }
