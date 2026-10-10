@@ -1,0 +1,18 @@
+.avatar {
+  --avatar-size: 48px;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  min-width: var(--avatar-size);
+  min-height: var(--avatar-size);
+  border-radius: 50%;
+  color: #ffffff;
+  background: #2b5278; /* fallback; перекрывается inline-палитрой */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: calc(var(--avatar-size) * 0.4);
+  overflow: hidden;
+  user-select: none;
+  flex-shrink: 0;
+}

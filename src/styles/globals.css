@@ -1,7 +1,26 @@
 :root {
-  color-scheme: light;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+
+  /* Базовые токены темы */
+  --bg-sidebar: #17212b;
+  --bg-chat: #0e1621;
+  --bubble-in: #182533;
+  --bubble-out: #2b5278;
+  --text: #ffffff;
+  --text-muted: #7f91a4;
+  --accent: #3390ec;
+
+  /* Производные токены */
+  --bg-hover: #202b36;
+  --bg-active: #2b5278;
+  --bg-header: #17212b;
+  --bg-input: #242f3d;
+  --divider: #101921;
+  --accent-hover: #2b7fd4;
+  --bubble-out-text: #ffffff;
+
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
-body { background: #d9e2e8; }
+body { background: var(--bg-chat); color: var(--text); }
