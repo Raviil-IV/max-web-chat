@@ -29,17 +29,24 @@ async function request<T>(
     ...init,
     headers: { "Content-Type": "application/json", ...(init.headers ?? {}) },
   });
+  const text = await response.text();
   if (!response.ok) {
     let message = `HTTP ${response.status}`;
-    try {
-      const body = await response.json();
-      if (body && typeof body.message === "string") message = body.message;
-    } catch {
-      /* тело не JSON — оставляем сообщение по умолчанию */
+    if (text) {
+      try {
+        const body = JSON.parse(text);
+        if (body && typeof body.message === "string") message = body.message;
+      } catch {
+        /* тело не JSON — оставляем сообщение по умолчанию */
+      }
     }
     throw new GreenApiError(response.status, message);
   }
-  return (await response.json()) as T;
+  // GREEN-API отвечает пустым телом (HTTP 200 без содержимого), когда очередь
+  // уведомлений пуста — так ведёт себя receiveNotification. Пустой ответ
+  // трактуем как null, иначе JSON.parse падает и поллинг уходит в вечную ошибку.
+  if (!text) return null as unknown as T;
+  return JSON.parse(text) as T;
 }
 
 export function getSettings(creds: Credentials): Promise<unknown> {

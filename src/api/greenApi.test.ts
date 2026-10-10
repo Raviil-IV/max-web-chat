@@ -13,11 +13,15 @@ import type { Credentials } from "./types";
 
 const creds: Credentials = { idInstance: "1101000", apiTokenInstance: "token" };
 
-function mockFetchOnce(json: unknown, ok = true, status = 200) {
+function mockFetchOnce(body: unknown, ok = true, status = 200) {
+  // GREEN-API может вернуть пустое тело (например, receiveNotification при
+  // пустой очереди) — в этом случае text() отдаёт "", как настоящий fetch.
+  const text = body === null || body === undefined ? "" : JSON.stringify(body);
   const fetchMock = vi.fn().mockResolvedValue({
     ok,
     status,
-    json: async () => json,
+    text: async () => text,
+    json: async () => JSON.parse(text),
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -64,9 +68,13 @@ describe("greenApi", () => {
     expect(JSON.parse(init.body)).toEqual({ phoneNumber: "79991234567" });
   });
 
-  it("receiveNotification returns null on empty body", async () => {
-    mockFetchOnce(null);
+  it("receiveNotification returns null on an empty body", async () => {
+    const fetchMock = mockFetchOnce(null);
     await expect(receiveNotification(creds)).resolves.toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.green-api.com/waInstance1101000/receiveNotification/token",
+      expect.objectContaining({ method: "GET" })
+    );
   });
 
   it("deleteNotification uses receiptId in the path", async () => {
